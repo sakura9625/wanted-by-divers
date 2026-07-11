@@ -1,7 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../features/home/screens/home_screen.dart';
-import '../../features/explore/screens/explore_screen.dart';
-import '../../features/post/screens/post_screen.dart';
+import '../../features/latest/screens/latest_screen.dart';
 import '../../features/wanted/screens/wanted_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../core/constants/app_colors.dart';
@@ -18,67 +17,28 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    ExploreScreen(),
+    LatestScreen(),
     WantedScreen(),
     ProfileScreen(),
   ];
-
-  void _onPostTapped() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const PostScreen()),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_currentIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: _onPostTapped,
-        backgroundColor: AppColors.secondary,
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        color: AppColors.surface,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(0, Icons.home, 'ホーム'),
-            _buildNavItem(1, Icons.search, '探す'),
-            const SizedBox(width: 48),
-            _buildNavItem(2, Icons.favorite, 'Wanted'),
-            _buildNavItem(3, Icons.person, 'マイページ'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    final isSelected = _currentIndex == index;
-    return InkWell(
-      onTap: () => setState(() => _currentIndex = index),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        backgroundColor: AppColors.surface,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textSecondary,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
+          BottomNavigationBarItem(icon: Icon(Icons.access_time), label: '最新情報'),
+          BottomNavigationBarItem(icon: Icon(Icons.star_border), label: '見たいリスト'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'マイページ'),
+        ],
       ),
     );
   }

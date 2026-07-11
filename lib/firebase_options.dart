@@ -31,10 +31,12 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBAF5wCbnF5rEfeWDxiBbA0ORTGN09XXF0',
+    apiKey: 'AIzaSyC2DhJ3qc17We_Ec-EleFwIoH4_3pkKJF4',
     appId: '1:970002681551:web:9e85605a1ed065f3e6b1ba',
     messagingSenderId: '970002681551',
     projectId: 'wanted-by-divers',
     storageBucket: 'wanted-by-divers.firebasestorage.app',
+    authDomain: 'wanted-by-divers.firebaseapp.com',
+    measurementId: 'G-MTPTBQN644',
   );
 }

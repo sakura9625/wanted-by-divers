@@ -47,3 +47,5 @@ app.*.map.json
 # Firebase
 google-services.json
 GoogleService-Info.plist
+scripts/serviceAccountKey.json
+scripts/node_modules/
