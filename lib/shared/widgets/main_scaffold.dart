@@ -3,7 +3,6 @@ import '../../features/home/screens/home_screen.dart';
 import '../../features/latest/screens/latest_screen.dart';
 import '../../features/wanted/screens/wanted_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
-import '../../core/constants/app_colors.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -26,19 +25,27 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textSecondary,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
-          BottomNavigationBarItem(icon: Icon(Icons.access_time), label: '最新情報'),
-          BottomNavigationBarItem(icon: Icon(Icons.star_border), label: '見たいリスト'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'マイページ'),
-        ],
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(color: Color(0xFF0D1B2A), width: 2),
+          ),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) => setState(() => _currentIndex = index),
+          backgroundColor: Colors.white,
+          selectedItemColor: const Color(0xFF0077B6),
+          unselectedItemColor: const Color(0xFF8899AA),
+          type: BottomNavigationBarType.fixed,
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
+            BottomNavigationBarItem(icon: Icon(Icons.access_time), label: '最新情報'),
+            BottomNavigationBarItem(icon: Icon(Icons.star_border), label: '見たいリスト'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'マイページ'),
+          ],
+        ),
       ),
     );
   }

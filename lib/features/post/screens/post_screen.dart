@@ -191,12 +191,12 @@ class _PostScreenState extends State<PostScreen> {
       onChanged: enabled ? onChanged : null,
       hint: Text(hint,
           style: const TextStyle(color: AppColors.textSecondary)),
-      style: const TextStyle(color: AppColors.textPrimary),
-      dropdownColor: AppColors.surface,
+      style: const TextStyle(color: Color(0xFF0D1B2A), fontSize: 16),
+      dropdownColor: Colors.white,
       isExpanded: true,
       decoration: InputDecoration(
         filled: true,
-        fillColor: AppColors.background,
+        fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.textSecondary),
@@ -221,9 +221,11 @@ class _PostScreenState extends State<PostScreen> {
 
   Widget _buildCreatureSection() {
     return Card(
-      color: AppColors.surface,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFF29B6F6), width: 2),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -232,7 +234,7 @@ class _PostScreenState extends State<PostScreen> {
             const Text(
               '生物を選択 *',
               style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: Color(0xFF0D1B2A),
                   fontWeight: FontWeight.bold,
                   fontSize: 15),
             ),
@@ -243,7 +245,10 @@ class _PostScreenState extends State<PostScreen> {
               items: _categoryOptions
                   .map((c) => DropdownMenuItem(
                         value: c['value'],
-                        child: Text(c['label']!),
+                        child: Text(
+                          c['label']!,
+                          style: const TextStyle(color: Color(0xFF0D1B2A)),
+                        ),
                       ))
                   .toList(),
               onChanged: _onCategoryChanged,
@@ -266,7 +271,10 @@ class _PostScreenState extends State<PostScreen> {
                 items: _creatures
                     .map((c) => DropdownMenuItem(
                           value: c,
-                          child: Text(c['nameJa'] as String),
+                          child: Text(
+                            c['nameJa'] as String,
+                            style: const TextStyle(color: Color(0xFF0D1B2A)),
+                          ),
                         ))
                     .toList(),
                 onChanged: (val) =>
@@ -280,9 +288,11 @@ class _PostScreenState extends State<PostScreen> {
 
   Widget _buildAreaSection() {
     return Card(
-      color: AppColors.surface,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFF29B6F6), width: 2),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -291,7 +301,7 @@ class _PostScreenState extends State<PostScreen> {
             const Text(
               'エリアを選択 *',
               style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: Color(0xFF0D1B2A),
                   fontWeight: FontWeight.bold,
                   fontSize: 15),
             ),
@@ -300,8 +310,13 @@ class _PostScreenState extends State<PostScreen> {
               value: _selectedRegion,
               hint: '地域を選択',
               items: _regions
-                  .map((r) =>
-                      DropdownMenuItem(value: r, child: Text(r)))
+                  .map((r) => DropdownMenuItem(
+                        value: r,
+                        child: Text(
+                          r,
+                          style: const TextStyle(color: Color(0xFF0D1B2A)),
+                        ),
+                      ))
                   .toList(),
               onChanged: (val) => setState(() {
                 _selectedRegion = val;
@@ -316,7 +331,10 @@ class _PostScreenState extends State<PostScreen> {
               items: _filteredAreas
                   .map((a) => DropdownMenuItem(
                         value: a,
-                        child: Text(a['nameJa'] as String),
+                        child: Text(
+                          a['nameJa'] as String,
+                          style: const TextStyle(color: Color(0xFF0D1B2A)),
+                        ),
                       ))
                   .toList(),
               onChanged: (val) =>
@@ -333,20 +351,22 @@ class _PostScreenState extends State<PostScreen> {
     final m = _selectedDate.month.toString().padLeft(2, '0');
     final d = _selectedDate.day.toString().padLeft(2, '0');
     return Card(
-      color: AppColors.surface,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFF29B6F6), width: 2),
+      ),
       child: ListTile(
         onTap: _selectDate,
         title: const Text(
           '日付 *',
           style: TextStyle(
-              color: AppColors.textPrimary,
+              color: Color(0xFF0D1B2A),
               fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           '$y年${m}月${d}日',
-          style: const TextStyle(color: AppColors.primary),
+          style: const TextStyle(color: Color(0xFF29B6F6)),
         ),
         trailing: const Icon(Icons.calendar_today,
             color: AppColors.textSecondary),
@@ -357,8 +377,11 @@ class _PostScreenState extends State<PostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: const Color(0xFF0D1B2A),
         title: const Text('目撃情報を投稿'),
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -385,28 +408,41 @@ class _PostScreenState extends State<PostScreen> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: _isPosting ? null : _post,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  offset: const Offset(0, 3),
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _isPosting ? null : _post,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF29B6F6),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _isPosting
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2),
+                      )
+                    : const Text('投稿する',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
               ),
-              child: _isPosting
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2),
-                    )
-                  : const Text('投稿する',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold)),
             ),
           ),
         ),
