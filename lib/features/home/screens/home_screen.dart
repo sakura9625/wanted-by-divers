@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../post/screens/post_screen.dart';
 import '../../explore/screens/area_search_screen.dart';
+import '../../explore/screens/creature_search_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -88,11 +89,11 @@ class HomeScreen extends StatelessWidget {
                 title: 'どこで見た？',
                 subtitle: '見たい生物や場所の目撃情報を探そう',
                 buttonIcon: Icons.search,
-                buttonLabel: '目撃場所を検索する',
+                buttonLabel: '生物名から、目撃場所を検索する',
                 footerText: 'エリアやポイントから探せます',
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const AreaSearchScreen()),
+                    MaterialPageRoute(builder: (_) => const CreatureSearchScreen()),
                   );
                 },
               ),
@@ -104,9 +105,13 @@ class HomeScreen extends StatelessWidget {
                 title: '何を見た？',
                 subtitle: '生物の目撃情報を詳しく調べよう',
                 buttonIcon: Icons.set_meal,
-                buttonLabel: '目撃生物を検索する',
+                buttonLabel: 'エリア名から、目撃生物を検索する',
                 footerText: '生物の分布や季節情報も確認できます',
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AreaSearchScreen()),
+                  );
+                },
               ),
               const SizedBox(height: 32),
             ],

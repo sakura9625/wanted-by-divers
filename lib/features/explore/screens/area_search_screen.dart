@@ -53,7 +53,7 @@ class _AreaSearchScreenState extends State<AreaSearchScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-          'どこで見た？',
+          '何を見た？',
           style: TextStyle(color: Color(0xFF0D1B2A), fontWeight: FontWeight.w500),
         ),
         iconTheme: const IconThemeData(color: Color(0xFF0D1B2A)),
@@ -75,7 +75,7 @@ class _AreaSearchScreenState extends State<AreaSearchScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFF26C6A6), width: 2),
+                      border: Border.all(color: const Color(0xFFFFB300), width: 2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: DropdownButtonHideUnderline(
@@ -115,7 +115,7 @@ class _AreaSearchScreenState extends State<AreaSearchScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFF26C6A6), width: 2),
+                      border: Border.all(color: const Color(0xFFFFB300), width: 2),
                       borderRadius: BorderRadius.circular(12),
                       color: _selectedRegion == null
                           ? const Color(0xFFF5F5F5)
@@ -172,7 +172,7 @@ class _AreaSearchScreenState extends State<AreaSearchScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF26C6A6),
+                        backgroundColor: const Color(0xFFFFB300),
                         foregroundColor: Colors.white,
                         disabledBackgroundColor: const Color(0xFFE0E0E0),
                         padding: const EdgeInsets.symmetric(vertical: 16),

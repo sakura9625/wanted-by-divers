@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'creature_sightings_screen.dart';
 
-class AreaDetailScreen extends StatefulWidget {
-  final String areaId;
-  final String areaName;
+class CreatureDetailScreen extends StatefulWidget {
+  final String creatureId;
+  final String creatureName;
 
-  const AreaDetailScreen({
+  const CreatureDetailScreen({
     super.key,
-    required this.areaId,
-    required this.areaName,
+    required this.creatureId,
+    required this.creatureName,
   });
 
   @override
-  State<AreaDetailScreen> createState() => _AreaDetailScreenState();
+  State<CreatureDetailScreen> createState() => _CreatureDetailScreenState();
 }
 
-class _AreaDetailScreenState extends State<AreaDetailScreen> {
+class _CreatureDetailScreenState extends State<CreatureDetailScreen> {
   int _selectedDays = 7;
   List<Map<String, dynamic>> _sightings = [];
   bool _loading = true;
@@ -32,21 +32,24 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
 
     final snapshot = await FirebaseFirestore.instance
         .collection('sightings')
-        .where('areaName', isEqualTo: widget.areaName)
+        .where('creatureName', isEqualTo: widget.creatureName)
         .get();
 
-    var docs = snapshot.docs.map((d) => d.data() as Map<String, dynamic>).toList();
+    List<Map<String, dynamic>> sightings = snapshot.docs
+        .map((d) => d.data())
+        .toList();
 
+    // クライアント側で期間フィルター
     if (_selectedDays > 0) {
       final cutoff = DateTime.now().subtract(Duration(days: _selectedDays));
-      docs = docs.where((s) {
+      sightings = sightings.where((s) {
         final date = (s['createdAt'] as Timestamp?)?.toDate();
         return date != null && date.isAfter(cutoff);
       }).toList();
     }
 
     setState(() {
-      _sightings = docs;
+      _sightings = sightings;
       _loading = false;
     });
   }
@@ -55,10 +58,9 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
     final Map<String, Map<String, dynamic>> map = {};
 
     for (final s in _sightings) {
-      final name = (s['creatureName'] ?? '') as String;
-      if (name.isEmpty) continue;
+      final areaName = (s['areaName'] ?? '') as String;
+      if (areaName.isEmpty) continue;
 
-      // dateフィールド優先、なければcreatedAtを使用
       DateTime date;
       if (s['date'] is String && (s['date'] as String).isNotEmpty) {
         date = DateTime.tryParse(s['date'] as String) ?? DateTime.now();
@@ -68,12 +70,19 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
         date = (s['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now();
       }
 
-      if (map.containsKey(name)) {
-        map[name]!['count'] = (map[name]!['count'] as int) + 1;
-        final existing = map[name]!['lastSeen'] as DateTime;
-        if (date.isAfter(existing)) map[name]!['lastSeen'] = date;
+      if (map.containsKey(areaName)) {
+        map[areaName]!['count'] = (map[areaName]!['count'] as int) + 1;
+        final existing = map[areaName]!['lastSeen'] as DateTime;
+        if (date.isAfter(existing)) map[areaName]!['lastSeen'] = date;
+        final areaId = s['areaId'];
+        if (areaId != null) map[areaName]!['areaId'] = areaId;
       } else {
-        map[name] = {'name': name, 'count': 1, 'lastSeen': date};
+        map[areaName] = {
+          'areaName': areaName,
+          'areaId': s['areaId'] ?? '',
+          'count': 1,
+          'lastSeen': date,
+        };
       }
     }
 
@@ -94,11 +103,9 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          widget.areaName,
+          widget.creatureName,
           style: const TextStyle(
-            color: Color(0xFF0D1B2A),
-            fontWeight: FontWeight.w500,
-          ),
+              color: Color(0xFF0D1B2A), fontWeight: FontWeight.w500),
         ),
         iconTheme: const IconThemeData(color: Color(0xFF0D1B2A)),
       ),
@@ -106,31 +113,42 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
         children: [
           // 期間フィルター
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0))),
+              border: Border(
+                  bottom: BorderSide(color: Color(0xFFE0E0E0))),
             ),
             child: Row(
               children: [
-                _PeriodChip(label: '7日以内', selected: _selectedDays == 7, onTap: () {
-                  setState(() => _selectedDays = 7);
-                  _loadSightings();
-                }),
+                _PeriodChip(
+                    label: '7日以内',
+                    selected: _selectedDays == 7,
+                    onTap: () {
+                      setState(() => _selectedDays = 7);
+                      _loadSightings();
+                    }),
                 const SizedBox(width: 8),
-                _PeriodChip(label: '30日以内', selected: _selectedDays == 30, onTap: () {
-                  setState(() => _selectedDays = 30);
-                  _loadSightings();
-                }),
+                _PeriodChip(
+                    label: '30日以内',
+                    selected: _selectedDays == 30,
+                    onTap: () {
+                      setState(() => _selectedDays = 30);
+                      _loadSightings();
+                    }),
                 const SizedBox(width: 8),
-                _PeriodChip(label: '全期間', selected: _selectedDays == 0, onTap: () {
-                  setState(() => _selectedDays = 0);
-                  _loadSightings();
-                }),
+                _PeriodChip(
+                    label: '全期間',
+                    selected: _selectedDays == 0,
+                    onTap: () {
+                      setState(() => _selectedDays = 0);
+                      _loadSightings();
+                    }),
               ],
             ),
           ),
 
-          // 目撃生物一覧
+          // エリア一覧
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
@@ -138,13 +156,13 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
                     ? const Center(
                         child: Text(
                           'この期間の目撃情報はありません',
-                          style: TextStyle(color: Color(0xFF8899AA), fontSize: 15),
+                          style: TextStyle(
+                              color: Color(0xFF8899AA), fontSize: 15),
                         ),
                       )
-                    : ListView.separated(
+                    : ListView.builder(
                         padding: EdgeInsets.zero,
                         itemCount: _aggregated.length,
-                        separatorBuilder: (_, __) => const SizedBox.shrink(),
                         itemBuilder: (context, i) {
                           final item = _aggregated[i];
                           final isEven = i % 2 == 0;
@@ -153,20 +171,23 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (_) => CreatureSightingsScreen(
-                                    creatureName: item['name'] as String,
-                                    areaName: widget.areaName,
+                                    creatureName: widget.creatureName,
+                                    areaName: item['areaName'] as String,
                                   ),
                                 ),
                               );
                             },
                             child: Container(
-                              color: isEven ? Colors.white : const Color(0xFFFFF8E8),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                              color: isEven
+                                  ? Colors.white
+                                  : const Color(0xFFE8F8F5),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 14),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      item['name'] as String,
+                                      item['areaName'] as String,
                                       style: const TextStyle(
                                         color: Color(0xFF0D1B2A),
                                         fontSize: 16,
@@ -208,19 +229,23 @@ class _PeriodChip extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _PeriodChip({required this.label, required this.selected, required this.onTap});
+  const _PeriodChip(
+      {required this.label, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFFFB300) : Colors.white,
+          color: selected ? const Color(0xFF26C6A6) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? const Color(0xFFFFB300) : const Color(0xFFD0E0E0),
+            color: selected
+                ? const Color(0xFF26C6A6)
+                : const Color(0xFFD0E0E0),
           ),
         ),
         child: Text(
@@ -228,7 +253,8 @@ class _PeriodChip extends StatelessWidget {
           style: TextStyle(
             color: selected ? Colors.white : const Color(0xFF5A7A9A),
             fontSize: 13,
-            fontWeight: selected ? FontWeight.w500 : FontWeight.normal,
+            fontWeight:
+                selected ? FontWeight.w500 : FontWeight.normal,
           ),
         ),
       ),
