@@ -16,6 +16,7 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
   List<String> _suggestions = [];
   String _query = '';
   bool _loading = true;
+  Map<String, String> _synonymMap = {};
 
   final List<Map<String, String>> _categories = [
     {'label': 'サメ・エイ', 'value': 'shark_ray'},
@@ -72,24 +73,51 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
 
     final all = {...masterNames, ...sightingNames}.toList()..sort();
 
+    // creature_dictionaryから同義語を取得
+    final dictSnap = await FirebaseFirestore.instance
+        .collection('creature_dictionary')
+        .where('type', isEqualTo: 'synonym')
+        .get();
+
+    // 同義語マップを作成（rawName → canonicalName の双方向）
+    final synonymMap = <String, String>{};
+    for (final doc in dictSnap.docs) {
+      final data = doc.data();
+      final raw = data['rawName'] as String? ?? '';
+      final canonical = data['canonicalName'] as String? ?? '';
+      if (raw.isNotEmpty && canonical.isNotEmpty) {
+        synonymMap[raw] = canonical;
+        synonymMap[canonical] = raw;
+      }
+    }
+
     setState(() {
       _allCreatureNames = all;
       _allCreatures = allCreatures;
+      _synonymMap = synonymMap;
       _loading = false;
     });
   }
 
   void _onQueryChanged(String val) {
     final katakana = _toKatakana(val);
+    // 同義語を取得
+    final synonyms = _synonymMap.entries
+        .where((e) => e.key.contains(val) || e.key.contains(katakana))
+        .map((e) => e.value)
+        .toList();
+
     setState(() {
       _query = val;
       if (val.isEmpty) {
         _suggestions = [];
       } else {
-        _suggestions = _allCreatureNames
+        final direct = _allCreatureNames
             .where((n) => n.contains(val) || n.contains(katakana))
-            .take(8)
             .toList();
+        // 同義語も候補に追加
+        final withSynonyms = {...direct, ...synonyms}.toList()..sort();
+        _suggestions = withSynonyms.take(8).toList();
       }
     });
   }

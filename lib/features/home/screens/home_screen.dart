@@ -105,7 +105,7 @@ class HomeScreen extends StatelessWidget {
                 title: '何を見た？',
                 subtitle: '生物の目撃情報を詳しく調べよう',
                 buttonIcon: Icons.set_meal,
-                buttonLabel: 'エリア名から、目撃生物を検索する',
+                buttonLabel: 'エリアから、目撃生物を検索する',
                 footerText: '生物の分布や季節情報も確認できます',
                 onTap: () {
                   Navigator.of(context).push(

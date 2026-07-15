@@ -17,7 +17,7 @@ class LatestScreen extends StatefulWidget {
 
 class _LatestScreenState extends State<LatestScreen> {
   // フィルター
-  int _selectedDays = 7;
+  int _selectedDays = 0;
   String? _selectedRegion;
   String? _selectedAreaId;
   String? _selectedAreaName;
@@ -162,7 +162,8 @@ class _LatestScreenState extends State<LatestScreen> {
                         hint: '期間',
                         value: _selectedDays.toString(),
                         items: const [
-                          {'label': '今日', 'value': '0'},
+                          {'label': '全期間', 'value': '0'},
+                          {'label': '今日', 'value': '1'},
                           {'label': '7日以内', 'value': '7'},
                           {'label': '30日以内', 'value': '30'},
                         ],
