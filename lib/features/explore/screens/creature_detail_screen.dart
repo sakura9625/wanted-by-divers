@@ -5,11 +5,13 @@ import 'creature_sightings_screen.dart';
 class CreatureDetailScreen extends StatefulWidget {
   final String creatureId;
   final String creatureName;
+  final List<String>? groupMembers;
 
   const CreatureDetailScreen({
     super.key,
     required this.creatureId,
     required this.creatureName,
+    this.groupMembers,
   });
 
   @override
@@ -30,14 +32,17 @@ class _CreatureDetailScreenState extends State<CreatureDetailScreen> {
   Future<void> _loadSightings() async {
     setState(() => _loading = true);
 
-    final snapshot = await FirebaseFirestore.instance
-        .collection('sightings')
-        .where('creatureName', isEqualTo: widget.creatureName)
-        .get();
+    // 検索対象の生物名リスト（グループメンバーがあればそれも含める）
+    final searchNames = widget.groupMembers ?? [widget.creatureName];
 
-    List<Map<String, dynamic>> sightings = snapshot.docs
-        .map((d) => d.data())
-        .toList();
+    List<Map<String, dynamic>> sightings = [];
+    for (final name in searchNames) {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('sightings')
+          .where('creatureName', isEqualTo: name)
+          .get();
+      sightings.addAll(snapshot.docs.map((d) => d.data()));
+    }
 
     // クライアント側で期間フィルター
     if (_selectedDays > 0) {

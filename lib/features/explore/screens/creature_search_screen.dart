@@ -17,6 +17,7 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
   String _query = '';
   bool _loading = true;
   Map<String, String> _synonymMap = {};
+  Map<String, List<String>> _groupMap = {};
 
   final List<Map<String, String>> _categories = [
     {'label': 'サメ・エイ', 'value': 'shark_ray'},
@@ -91,10 +92,25 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
       }
     }
 
+    // creature_groupsを取得（グループ型同義語）
+    final groupsSnap = await FirebaseFirestore.instance
+        .collection('creature_groups')
+        .get();
+
+    final groupMap = <String, List<String>>{};
+    for (final doc in groupsSnap.docs) {
+      final data = doc.data();
+      final members = List<String>.from(data['members'] as List);
+      for (final member in members) {
+        groupMap[member] = members;
+      }
+    }
+
     setState(() {
       _allCreatureNames = all;
       _allCreatures = allCreatures;
       _synonymMap = synonymMap;
+      _groupMap = groupMap;
       _loading = false;
     });
   }
@@ -133,11 +149,16 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
 
   void _search() {
     if (_query.isEmpty) return;
+
+    // グループ型同義語展開
+    final groupMembers = _groupMap[_query];
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CreatureDetailScreen(
           creatureId: '',
           creatureName: _query,
+          groupMembers: groupMembers, // グループメンバーを渡す
         ),
       ),
     );
