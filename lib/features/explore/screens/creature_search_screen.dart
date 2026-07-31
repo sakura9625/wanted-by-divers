@@ -53,10 +53,26 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
   }
 
   Future<void> _loadData() async {
-    final masterSnap = await FirebaseFirestore.instance
-        .collection('creatures')
-        .where('isActive', isEqualTo: true)
-        .get();
+    // 3つのコレクションを並列取得
+    final results = await Future.wait([
+      FirebaseFirestore.instance
+          .collection('creatures')
+          .where('isActive', isEqualTo: true)
+          .get(),
+      FirebaseFirestore.instance
+          .collection('creature_dictionary')
+          .where('type', isEqualTo: 'synonym')
+          .get(),
+      FirebaseFirestore.instance
+          .collection('creature_groups')
+          .get(),
+    ]);
+
+    final masterSnap = results[0];
+    final dictSnap = results[1];
+    final groupsSnap = results[2];
+
+    // マスターデータ
     final masterNames = masterSnap.docs
         .map((d) => d.data()['nameJa'] as String)
         .toSet();
@@ -64,15 +80,7 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
         .map((d) => {'id': d.id, ...d.data()})
         .toList();
 
-    final all = masterNames.toList()..sort();
-
-    // creature_dictionaryから同義語を取得
-    final dictSnap = await FirebaseFirestore.instance
-        .collection('creature_dictionary')
-        .where('type', isEqualTo: 'synonym')
-        .get();
-
-    // 同義語マップを作成（rawName → canonicalName の双方向）
+    // 同義語マップ（rawName → canonicalName の双方向）
     final synonymMap = <String, String>{};
     for (final doc in dictSnap.docs) {
       final data = doc.data();
@@ -84,11 +92,7 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
       }
     }
 
-    // creature_groupsを取得（グループ型同義語）
-    final groupsSnap = await FirebaseFirestore.instance
-        .collection('creature_groups')
-        .get();
-
+    // グループマップ（グループ型同義語）
     final groupMap = <String, List<String>>{};
     for (final doc in groupsSnap.docs) {
       final data = doc.data();
@@ -97,6 +101,8 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
         groupMap[member] = members;
       }
     }
+
+    final all = masterNames.toList()..sort();
 
     setState(() {
       _allCreatureNames = all;
