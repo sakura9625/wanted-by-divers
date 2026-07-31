@@ -59,20 +59,12 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
         .get();
     final masterNames = masterSnap.docs
         .map((d) => d.data()['nameJa'] as String)
-        .toList();
+        .toSet();
     final allCreatures = masterSnap.docs
         .map((d) => {'id': d.id, ...d.data()})
         .toList();
 
-    final sightingsSnap = await FirebaseFirestore.instance
-        .collection('sightings')
-        .get();
-    final sightingNames = sightingsSnap.docs
-        .map((d) => d.data()['creatureName'] as String? ?? '')
-        .where((n) => n.isNotEmpty)
-        .toList();
-
-    final all = {...masterNames, ...sightingNames}.toList()..sort();
+    final all = masterNames.toList()..sort();
 
     // creature_dictionaryから同義語を取得
     final dictSnap = await FirebaseFirestore.instance
