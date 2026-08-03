@@ -25,6 +25,13 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: false
+  ios: true
+  image_path: "assets/images/EAF52E69-8362-4633-90BE-833CF893E662.PNG"
+  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true
