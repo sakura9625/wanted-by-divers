@@ -6,11 +6,15 @@ import 'sighting_detail_screen.dart';
 class CreatureSightingsScreen extends StatefulWidget {
   final String creatureName;
   final String areaName;
+  final String? areaId;
+  final List<String>? regionAreaIds;
 
   const CreatureSightingsScreen({
     super.key,
     required this.creatureName,
     required this.areaName,
+    this.areaId,
+    this.regionAreaIds,
   });
 
   @override
@@ -30,13 +34,31 @@ class _CreatureSightingsScreenState extends State<CreatureSightingsScreen> {
 
   Future<void> _loadData() async {
     // 目撃情報を取得
-    final snapshot = await FirebaseFirestore.instance
+    final base = FirebaseFirestore.instance
         .collection('sightings')
-        .where('creatureName', isEqualTo: widget.creatureName)
-        .where('areaName', isEqualTo: widget.areaName)
-        .get();
+        .where('creatureName', isEqualTo: widget.creatureName);
 
-    final sightings = snapshot.docs
+    final List<QueryDocumentSnapshot<Map<String, dynamic>>> rawDocs = [];
+
+    if (widget.regionAreaIds != null && widget.regionAreaIds!.isNotEmpty) {
+      // 地域全体検索：複数エリアのsightingsを取得（whereInは最大10件）
+      final ids = widget.regionAreaIds!;
+      for (var i = 0; i < ids.length; i += 10) {
+        final chunk = ids.sublist(i, i + 10 > ids.length ? ids.length : i + 10);
+        final snap = await base.where('areaId', whereIn: chunk).get();
+        rawDocs.addAll(snap.docs);
+      }
+    } else if (widget.areaId != null && widget.areaId!.isNotEmpty) {
+      final snap = await base.where('areaId', isEqualTo: widget.areaId).get();
+      rawDocs.addAll(snap.docs);
+    } else {
+      final snap = await base
+          .where('areaName', isEqualTo: widget.areaName)
+          .get();
+      rawDocs.addAll(snap.docs);
+    }
+
+    final sightings = rawDocs
         .map((d) => {'id': d.id, ...d.data()})
         .toList();
 

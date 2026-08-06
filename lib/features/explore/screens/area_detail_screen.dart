@@ -5,11 +5,13 @@ import 'creature_sightings_screen.dart';
 class AreaDetailScreen extends StatefulWidget {
   final String areaId;
   final String areaName;
+  final List<String>? regionAreaIds;
 
   const AreaDetailScreen({
     super.key,
     required this.areaId,
     required this.areaName,
+    this.regionAreaIds,
   });
 
   @override
@@ -30,12 +32,30 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
   Future<void> _loadSightings() async {
     setState(() => _loading = true);
 
-    final snapshot = await FirebaseFirestore.instance
-        .collection('sightings')
-        .where('areaName', isEqualTo: widget.areaName)
-        .get();
+    final List<QueryDocumentSnapshot<Map<String, dynamic>>> rawDocs = [];
 
-    var docs = snapshot.docs.map((d) => d.data() as Map<String, dynamic>).toList();
+    if (widget.regionAreaIds != null && widget.regionAreaIds!.isNotEmpty) {
+      // 地域全体検索：複数エリアのsightingsを取得
+      // FirestoreのwhereIn は最大10件までなので分割して取得
+      final ids = widget.regionAreaIds!;
+      for (var i = 0; i < ids.length; i += 10) {
+        final chunk = ids.sublist(i, i + 10 > ids.length ? ids.length : i + 10);
+        final snap = await FirebaseFirestore.instance
+            .collection('sightings')
+            .where('areaId', whereIn: chunk)
+            .get();
+        rawDocs.addAll(snap.docs);
+      }
+    } else {
+      // 通常のエリア検索
+      final snap = await FirebaseFirestore.instance
+          .collection('sightings')
+          .where('areaId', isEqualTo: widget.areaId)
+          .get();
+      rawDocs.addAll(snap.docs);
+    }
+
+    var docs = rawDocs.map((d) => d.data()).toList();
 
     if (_selectedDays > 0) {
       final cutoff = DateTime.now().subtract(Duration(days: _selectedDays));
@@ -155,6 +175,8 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
                                   builder: (_) => CreatureSightingsScreen(
                                     creatureName: item['name'] as String,
                                     areaName: widget.areaName,
+                                    areaId: widget.areaId,
+                                    regionAreaIds: widget.regionAreaIds,
                                   ),
                                 ),
                               );

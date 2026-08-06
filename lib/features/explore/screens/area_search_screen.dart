@@ -125,7 +125,7 @@ class _AreaSearchScreenState extends State<AreaSearchScreen> {
                       child: DropdownButton<String>(
                         isExpanded: true,
                         hint: Text(
-                          _selectedRegion == null ? '先に地域を選択してください' : 'エリアを選択',
+                          _selectedRegion == null ? '先に地域を選択してください' : 'エリアを選択（任意）',
                           style: TextStyle(
                             color: _selectedRegion == null
                                 ? const Color(0xFFBBBBBB)
@@ -161,15 +161,32 @@ class _AreaSearchScreenState extends State<AreaSearchScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _selectedAreaId == null ? null : () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => AreaDetailScreen(
-                              areaId: _selectedAreaId!,
-                              areaName: _selectedAreaName!,
+                      onPressed: _selectedRegion == null ? null : () {
+                        if (_selectedAreaId != null) {
+                          // エリアが選択されている場合：そのエリアで検索
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => AreaDetailScreen(
+                                areaId: _selectedAreaId!,
+                                areaName: _selectedAreaName!,
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        } else {
+                          // 地域のみ選択されている場合：地域全体で検索
+                          final regionAreas = _filteredAreas
+                              .map((a) => a['id'] as String)
+                              .toList();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => AreaDetailScreen(
+                                areaId: '',
+                                areaName: _selectedRegion!,
+                                regionAreaIds: regionAreas,
+                              ),
+                            ),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFFB300),
