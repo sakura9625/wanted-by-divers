@@ -163,15 +163,40 @@ class _AreaSearchScreenState extends State<AreaSearchScreen> {
                     child: ElevatedButton(
                       onPressed: _selectedRegion == null ? null : () {
                         if (_selectedAreaId != null) {
-                          // エリアが選択されている場合：そのエリアで検索
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => AreaDetailScreen(
-                                areaId: _selectedAreaId!,
-                                areaName: _selectedAreaName!,
+                          // エリアが選択されている場合
+                          // 「石垣島」など上位エリアの場合は配下エリアをまとめて検索
+                          final selectedArea = _allAreas
+                              .firstWhere((a) => a['id'] == _selectedAreaId);
+                          final selectedName = _selectedAreaName!;
+                          final subAreas = _allAreas.where((a) {
+                            final name = a['nameJa'] as String? ?? '';
+                            return name != selectedName &&
+                                name.startsWith(selectedName) &&
+                                (a['region'] as String?) ==
+                                    (selectedArea['region'] as String?);
+                          }).map((a) => a['id'] as String).toList();
+
+                          if (subAreas.isNotEmpty) {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => AreaDetailScreen(
+                                  areaId: '',
+                                  areaName: selectedName,
+                                  // 上位エリア自身に紐づく目撃情報も含める
+                                  regionAreaIds: [_selectedAreaId!, ...subAreas],
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          } else {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => AreaDetailScreen(
+                                  areaId: _selectedAreaId!,
+                                  areaName: selectedName,
+                                ),
+                              ),
+                            );
+                          }
                         } else {
                           // 地域のみ選択されている場合：地域全体で検索
                           final regionAreas = _filteredAreas

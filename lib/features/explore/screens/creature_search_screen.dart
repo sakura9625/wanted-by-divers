@@ -131,7 +131,7 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
             .toList();
         // 同義語も候補に追加
         final withSynonyms = {...direct, ...synonyms}.toList()..sort();
-        _suggestions = withSynonyms.take(8).toList();
+        _suggestions = withSynonyms.take(20).toList();
       }
     });
   }
@@ -318,36 +318,39 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
                           ),
                         ],
                       ),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        itemCount: _suggestions.length,
-                        separatorBuilder: (_, __) => const Divider(
-                            height: 1, color: Color(0xFFEEEEEE)),
-                        itemBuilder: (context, i) {
-                          final name = _suggestions[i];
-                          return InkWell(
-                            onTap: () => _selectCreature(name),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.search,
-                                      color: Color(0xFF8899AA), size: 16),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    name,
-                                    style: const TextStyle(
-                                      color: Color(0xFF0D1B2A),
-                                      fontSize: 15,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 240),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          itemCount: _suggestions.length,
+                          separatorBuilder: (_, __) => const Divider(
+                              height: 1, color: Color(0xFFEEEEEE)),
+                          itemBuilder: (context, i) {
+                            final name = _suggestions[i];
+                            return InkWell(
+                              onTap: () => _selectCreature(name),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.search,
+                                        color: Color(0xFF8899AA), size: 16),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      name,
+                                      style: const TextStyle(
+                                        color: Color(0xFF0D1B2A),
+                                        fontSize: 15,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ],
