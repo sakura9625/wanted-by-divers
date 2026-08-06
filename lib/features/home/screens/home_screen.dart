@@ -51,6 +51,29 @@ class HomeScreen extends StatelessWidget {
                             fontSize: 11,
                           ),
                         ),
+                        SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.location_on, size: 13, color: Colors.red),
+                            SizedBox(width: 4),
+                            Text(
+                              '現在の対応エリア',
+                              style: TextStyle(fontSize: 11, color: Color(0xFF444444)),
+                            ),
+                            SizedBox(width: 6),
+                            _AreaChip('伊豆半島'),
+                            SizedBox(width: 4),
+                            _AreaChip('串本'),
+                            SizedBox(width: 4),
+                            _AreaChip('石垣島'),
+                            SizedBox(width: 6),
+                            Text(
+                              '順次拡大中',
+                              style: TextStyle(fontSize: 11, color: Color(0xFF888888)),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -236,6 +259,37 @@ class _HomeCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AreaChip extends StatelessWidget {
+  final String label;
+  const _AreaChip(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          color: Color(0xFF0077B6),
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
