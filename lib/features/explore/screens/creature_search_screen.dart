@@ -80,15 +80,14 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
         .map((d) => {'id': d.id, ...d.data()})
         .toList();
 
-    // 同義語マップ（rawName → canonicalName の双方向）
+    // raw → canonical の一方向のみ（例: ハンマー → ハンマーヘッド）
     final synonymMap = <String, String>{};
     for (final doc in dictSnap.docs) {
       final data = doc.data();
       final raw = data['rawName'] as String? ?? '';
       final canonical = data['canonicalName'] as String? ?? '';
-      if (raw.isNotEmpty && canonical.isNotEmpty) {
+      if (raw.isNotEmpty && canonical.isNotEmpty && raw != canonical) {
         synonymMap[raw] = canonical;
-        synonymMap[canonical] = raw;
       }
     }
 
@@ -97,8 +96,10 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
     for (final doc in groupsSnap.docs) {
       final data = doc.data();
       final members = List<String>.from(data['members'] as List);
-      for (final member in members) {
-        groupMap[member] = members;
+      final representative = data['representativeName'] as String? ?? '';
+      // 代表名のみグループ展開（ハマクマノミで検索してもグループ全体にはしない）
+      if (representative.isNotEmpty) {
+        groupMap[representative] = members;
       }
     }
 
@@ -115,11 +116,6 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
 
   void _onQueryChanged(String val) {
     final katakana = _toKatakana(val);
-    // 同義語を取得
-    final synonyms = _synonymMap.entries
-        .where((e) => e.key.contains(val) || e.key.contains(katakana))
-        .map((e) => e.value)
-        .toList();
 
     setState(() {
       _query = val;
@@ -129,8 +125,15 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
         final direct = _allCreatureNames
             .where((n) => n.contains(val) || n.contains(katakana))
             .toList();
-        // 同義語も候補に追加
-        final withSynonyms = {...direct, ...synonyms}.toList()..sort();
+        // 入力にマッチするrawNameの正規名（canonicalName）を候補に追加
+        // ただしdirectに既に含まれていない場合のみ
+        final synonymTargets = _synonymMap.entries
+            .where((e) => e.key.contains(val) || e.key.contains(katakana))
+            .map((e) => e.value)
+            .where((canonical) => !direct.contains(canonical))
+            .toSet()
+            .toList();
+        final withSynonyms = {...direct, ...synonymTargets}.toList()..sort();
         _suggestions = withSynonyms.take(20).toList();
       }
     });
@@ -146,17 +149,21 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
   }
 
   void _search() {
-    if (_query.isEmpty) return;
+    final query = _query.trim();
+    if (query.isEmpty) return;
 
-    // グループ型同義語展開
-    final groupMembers = _groupMap[_query];
+    // 同義語から正規名に変換（ハンマー → ハンマーヘッド）
+    final canonical = _synonymMap[query] ?? query;
+
+    // グループ展開
+    final groupMembers = _groupMap[canonical];
 
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CreatureDetailScreen(
           creatureId: '',
-          creatureName: _query,
-          groupMembers: groupMembers, // グループメンバーを渡す
+          creatureName: canonical,
+          groupMembers: groupMembers,
         ),
       ),
     );

@@ -178,6 +178,7 @@ class _CreatureDetailScreenState extends State<CreatureDetailScreen> {
                                   builder: (_) => CreatureSightingsScreen(
                                     creatureName: widget.creatureName,
                                     areaName: item['areaName'] as String,
+                                    groupMembers: widget.groupMembers,
                                   ),
                                 ),
                               );

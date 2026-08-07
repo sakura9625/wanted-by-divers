@@ -8,6 +8,7 @@ class CreatureSightingsScreen extends StatefulWidget {
   final String areaName;
   final String? areaId;
   final List<String>? regionAreaIds;
+  final List<String>? groupMembers;
 
   const CreatureSightingsScreen({
     super.key,
@@ -15,6 +16,7 @@ class CreatureSightingsScreen extends StatefulWidget {
     required this.areaName,
     this.areaId,
     this.regionAreaIds,
+    this.groupMembers,
   });
 
   @override
@@ -33,29 +35,35 @@ class _CreatureSightingsScreenState extends State<CreatureSightingsScreen> {
   }
 
   Future<void> _loadData() async {
-    // 目撃情報を取得
-    final base = FirebaseFirestore.instance
-        .collection('sightings')
-        .where('creatureName', isEqualTo: widget.creatureName);
+    // 検索対象の生物名リスト（グループメンバーがあればそれも含める）
+    final searchNames = widget.groupMembers ?? [widget.creatureName];
 
     final List<QueryDocumentSnapshot<Map<String, dynamic>>> rawDocs = [];
 
-    if (widget.regionAreaIds != null && widget.regionAreaIds!.isNotEmpty) {
-      // 地域全体検索：複数エリアのsightingsを取得（whereInは最大10件）
-      final ids = widget.regionAreaIds!;
-      for (var i = 0; i < ids.length; i += 10) {
-        final chunk = ids.sublist(i, i + 10 > ids.length ? ids.length : i + 10);
-        final snap = await base.where('areaId', whereIn: chunk).get();
+    for (final name in searchNames) {
+      // 目撃情報を取得
+      final base = FirebaseFirestore.instance
+          .collection('sightings')
+          .where('creatureName', isEqualTo: name);
+
+      if (widget.regionAreaIds != null && widget.regionAreaIds!.isNotEmpty) {
+        // 地域全体検索：複数エリアのsightingsを取得（whereInは最大10件）
+        final ids = widget.regionAreaIds!;
+        for (var i = 0; i < ids.length; i += 10) {
+          final chunk =
+              ids.sublist(i, i + 10 > ids.length ? ids.length : i + 10);
+          final snap = await base.where('areaId', whereIn: chunk).get();
+          rawDocs.addAll(snap.docs);
+        }
+      } else if (widget.areaId != null && widget.areaId!.isNotEmpty) {
+        final snap = await base.where('areaId', isEqualTo: widget.areaId).get();
+        rawDocs.addAll(snap.docs);
+      } else {
+        final snap = await base
+            .where('areaName', isEqualTo: widget.areaName)
+            .get();
         rawDocs.addAll(snap.docs);
       }
-    } else if (widget.areaId != null && widget.areaId!.isNotEmpty) {
-      final snap = await base.where('areaId', isEqualTo: widget.areaId).get();
-      rawDocs.addAll(snap.docs);
-    } else {
-      final snap = await base
-          .where('areaName', isEqualTo: widget.areaName)
-          .get();
-      rawDocs.addAll(snap.docs);
     }
 
     final sightings = rawDocs
