@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/utils/sighting_date.dart';
 import '../../explore/screens/sighting_detail_screen.dart';
 
 class LatestScreen extends StatefulWidget {
@@ -75,14 +76,14 @@ class _LatestScreenState extends State<LatestScreen> {
         .map((d) => {'id': d.id, ...d.data() as Map<String, dynamic>})
         .toList();
 
-    // 期間フィルター
+    // 期間フィルター（目撃日ベース）
     if (_selectedDays > 0) {
       final cutoff = DateTime.now().subtract(Duration(days: _selectedDays));
-      sightings = sightings.where((s) {
-        final date = (s['createdAt'] as Timestamp?)?.toDate();
-        return date != null && date.isAfter(cutoff);
-      }).toList();
+      sightings = sightings.where((s) => sightingDate(s).isAfter(cutoff)).toList();
     }
+
+    // 目撃日の新しい順に並び替え
+    sightings.sort((a, b) => sightingDate(b).compareTo(sightingDate(a)));
 
     setState(() {
       _sightings = sightings;

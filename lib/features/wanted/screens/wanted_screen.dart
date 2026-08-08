@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/utils/sighting_date.dart';
 import '../../explore/screens/creature_detail_screen.dart';
 import '../../explore/screens/sighting_detail_screen.dart';
 import '../../latest/screens/latest_screen.dart';
@@ -114,12 +115,16 @@ class _WantedScreenState extends State<WantedScreen> {
         .toList();
 
     // 各生物の最新目撃情報を取得
+    // 期間フィルターは目撃日ベースなので、絞り込んでから3件に切る
     final sightingsMap = <String, List<Map<String, dynamic>>>{};
     for (final name in creatures) {
-      final q = await _buildSightingsQuery(name).limit(3).get();
-      sightingsMap[name] = q.docs
+      final q = await _buildSightingsQuery(name).get();
+      final docs = q.docs
           .map((d) => {'id': d.id, ...d.data() as Map<String, dynamic>})
+          .where(_withinSelectedPeriod)
           .toList();
+      docs.sort((a, b) => sightingDate(b).compareTo(sightingDate(a)));
+      sightingsMap[name] = docs.take(3).toList();
     }
 
     setState(() {
@@ -128,6 +133,16 @@ class _WantedScreenState extends State<WantedScreen> {
       _loading = false;
     });
     print('[Wanted] _loadWanted complete, creatures: ${creatures.length}');
+  }
+
+  // 期間ドロップダウン（今日=0 / 7日以内 / 30日以内）を目撃日で判定する
+  bool _withinSelectedPeriod(Map<String, dynamic> s) {
+    final date = sightingDate(s);
+    if (_selectedDays == 0) {
+      final now = DateTime.now();
+      return !date.isBefore(DateTime(now.year, now.month, now.day));
+    }
+    return date.isAfter(DateTime.now().subtract(Duration(days: _selectedDays)));
   }
 
   Query _buildSightingsQuery(String creatureName) {
