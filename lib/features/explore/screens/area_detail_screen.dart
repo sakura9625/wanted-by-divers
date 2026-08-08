@@ -113,12 +113,22 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          widget.areaName,
-          style: const TextStyle(
-            color: Color(0xFF0D1B2A),
-            fontWeight: FontWeight.w500,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.areaName,
+              style: const TextStyle(
+                color: Color(0xFF0D1B2A),
+                fontWeight: FontWeight.w500,
+                fontSize: 18,
+              ),
+            ),
+            const Text(
+              '目撃生物一覧',
+              style: TextStyle(color: Color(0xFF8899AA), fontSize: 13),
+            ),
+          ],
         ),
         iconTheme: const IconThemeData(color: Color(0xFF0D1B2A)),
       ),

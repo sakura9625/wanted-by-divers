@@ -70,18 +70,25 @@ class _CreatureSightingsScreenState extends State<CreatureSightingsScreen> {
         .map((d) => {'id': d.id, ...d.data()})
         .toList();
 
-    // 最新順に並び替え
-    sightings.sort((a, b) {
-      final aDate = (a['createdAt'] as Timestamp?)?.toDate() ?? DateTime(2000);
-      final bDate = (b['createdAt'] as Timestamp?)?.toDate() ?? DateTime(2000);
-      return bDate.compareTo(aDate);
-    });
+    // 目撃日の新しい順に並び替え（表示している日付と同じ基準で並べる）
+    sightings.sort((a, b) => _sightingDate(b).compareTo(_sightingDate(a)));
 
     setState(() {
       _sightings = sightings;
       _loading = false;
     });
   }
+
+  // 並び替え用の日付（dateはクローラー由来の文字列、ユーザー投稿はTimestamp）
+  DateTime? _parseDate(dynamic date) {
+    if (date is Timestamp) return date.toDate();
+    if (date is DateTime) return date;
+    if (date is String) return DateTime.tryParse(date.replaceAll('/', '-'));
+    return null;
+  }
+
+  DateTime _sightingDate(Map<String, dynamic> s) =>
+      _parseDate(s['date']) ?? _parseDate(s['createdAt']) ?? DateTime(2000);
 
   String _formatDate(dynamic date) {
     if (date == null) return '不明';
