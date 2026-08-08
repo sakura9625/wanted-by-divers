@@ -155,8 +155,16 @@ class _CreatureSearchScreenState extends State<CreatureSearchScreen> {
     // 同義語から正規名に変換（ハンマー → ハンマーヘッド）
     final canonical = _synonymMap[query] ?? query;
 
-    // グループ展開
-    final groupMembers = _groupMap[canonical];
+    // グループ展開（代表名の場合）
+    final baseMembers = _groupMap[canonical] ?? [canonical];
+
+    // 幼魚・幼体・稚魚を自動追加
+    final groupMembers = [
+      ...baseMembers,
+      ...baseMembers.map((n) => '${n}幼魚'),
+      ...baseMembers.map((n) => '${n}幼体'),
+      ...baseMembers.map((n) => '${n}稚魚'),
+    ];
 
     Navigator.of(context).push(
       MaterialPageRoute(
