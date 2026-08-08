@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/utils/sighting_date.dart';
 import 'sighting_detail_screen.dart';
 
 class CreatureSightingsScreen extends StatefulWidget {
@@ -71,24 +72,13 @@ class _CreatureSightingsScreenState extends State<CreatureSightingsScreen> {
         .toList();
 
     // 目撃日の新しい順に並び替え（表示している日付と同じ基準で並べる）
-    sightings.sort((a, b) => _sightingDate(b).compareTo(_sightingDate(a)));
+    sightings.sort((a, b) => sightingDate(b).compareTo(sightingDate(a)));
 
     setState(() {
       _sightings = sightings;
       _loading = false;
     });
   }
-
-  // 並び替え用の日付（dateはクローラー由来の文字列、ユーザー投稿はTimestamp）
-  DateTime? _parseDate(dynamic date) {
-    if (date is Timestamp) return date.toDate();
-    if (date is DateTime) return date;
-    if (date is String) return DateTime.tryParse(date.replaceAll('/', '-'));
-    return null;
-  }
-
-  DateTime _sightingDate(Map<String, dynamic> s) =>
-      _parseDate(s['date']) ?? _parseDate(s['createdAt']) ?? DateTime(2000);
 
   String _formatDate(dynamic date) {
     if (date == null) return '不明';

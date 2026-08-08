@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/utils/sighting_date.dart';
 import 'creature_sightings_screen.dart';
 
 class CreatureDetailScreen extends StatefulWidget {
@@ -66,14 +67,7 @@ class _CreatureDetailScreenState extends State<CreatureDetailScreen> {
       final areaName = (s['areaName'] ?? '') as String;
       if (areaName.isEmpty) continue;
 
-      DateTime date;
-      if (s['date'] is String && (s['date'] as String).isNotEmpty) {
-        date = DateTime.tryParse(s['date'] as String) ?? DateTime.now();
-      } else if (s['date'] is Timestamp) {
-        date = (s['date'] as Timestamp).toDate();
-      } else {
-        date = (s['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now();
-      }
+      final date = sightingDate(s);
 
       if (map.containsKey(areaName)) {
         map[areaName]!['count'] = (map[areaName]!['count'] as int) + 1;
@@ -92,7 +86,12 @@ class _CreatureDetailScreenState extends State<CreatureDetailScreen> {
     }
 
     final list = map.values.toList();
-    list.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+    // 最終目撃日の新しい順（同じ日付なら件数の多い順）
+    list.sort((a, b) {
+      final byDate = (b['lastSeen'] as DateTime).compareTo(a['lastSeen'] as DateTime);
+      if (byDate != 0) return byDate;
+      return (b['count'] as int).compareTo(a['count'] as int);
+    });
     return list;
   }
 
