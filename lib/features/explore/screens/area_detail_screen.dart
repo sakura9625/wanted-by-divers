@@ -58,12 +58,10 @@ class _AreaDetailScreenState extends State<AreaDetailScreen> {
 
     var docs = rawDocs.map((d) => d.data()).toList();
 
+    // 期間フィルター（目撃日ベース）
     if (_selectedDays > 0) {
       final cutoff = DateTime.now().subtract(Duration(days: _selectedDays));
-      docs = docs.where((s) {
-        final date = (s['createdAt'] as Timestamp?)?.toDate();
-        return date != null && date.isAfter(cutoff);
-      }).toList();
+      docs = docs.where((s) => sightingDate(s).isAfter(cutoff)).toList();
     }
 
     setState(() {

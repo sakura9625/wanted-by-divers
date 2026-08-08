@@ -45,13 +45,10 @@ class _CreatureDetailScreenState extends State<CreatureDetailScreen> {
       sightings.addAll(snapshot.docs.map((d) => d.data()));
     }
 
-    // クライアント側で期間フィルター
+    // クライアント側で期間フィルター（目撃日ベース）
     if (_selectedDays > 0) {
       final cutoff = DateTime.now().subtract(Duration(days: _selectedDays));
-      sightings = sightings.where((s) {
-        final date = (s['createdAt'] as Timestamp?)?.toDate();
-        return date != null && date.isAfter(cutoff);
-      }).toList();
+      sightings = sightings.where((s) => sightingDate(s).isAfter(cutoff)).toList();
     }
 
     setState(() {
